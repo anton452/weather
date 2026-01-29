@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import '../models/weather.dart';
 import '../widgets/info_card.dart';
 
 class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key});
+  final Weather weather;
+
+  const DetailScreen({super.key, required this.weather});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,6 @@ class DetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top bar
                 Row(
                   children: [
                     IconButton(
@@ -36,24 +38,17 @@ class DetailScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-
-                const Text(
-                  'Karaganda',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                  ),
+                Text(
+                  weather.cityName,
+                  style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Clear sky',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                Text(
+                  weather.description,
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
-
                 const SizedBox(height: 18),
 
-                // Main info
                 Row(
                   children: [
                     Container(
@@ -69,18 +64,14 @@ class DetailScreen extends StatelessWidget {
                     const SizedBox(width: 14),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
-                          '-5°',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 58,
-                            fontWeight: FontWeight.w900,
-                          ),
+                          '${weather.temp.round()}°',
+                          style: const TextStyle(color: Colors.white, fontSize: 58, fontWeight: FontWeight.w900),
                         ),
                         Text(
-                          'Feels like -9°',
-                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                          'Feels like ${weather.feelsLike.round()}°',
+                          style: const TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                       ],
                     )
@@ -88,31 +79,28 @@ class DetailScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 18),
-
                 const Text(
                   'Parameters',
                   style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 12),
 
-                // Cards grid
                 GridView.count(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  children: const [
-                    InfoCard(icon: Icons.water_drop_outlined, label: 'Humidity', value: '70%'),
-                    InfoCard(icon: Icons.air, label: 'Wind', value: '3.5 m/s'),
-                    InfoCard(icon: Icons.speed, label: 'Pressure', value: '1016 hPa'),
-                    InfoCard(icon: Icons.thermostat, label: 'Min / Max', value: '-9° / -3°'),
+                  children: [
+                    InfoCard(icon: Icons.water_drop_outlined, label: 'Humidity', value: '${weather.humidity}%'),
+                    InfoCard(icon: Icons.air, label: 'Wind', value: '${weather.windSpeed.toStringAsFixed(1)} m/s'),
+                    InfoCard(icon: Icons.speed, label: 'Pressure', value: '${weather.pressure} hPa'),
+                    InfoCard(icon: Icons.thermostat, label: 'Min / Max', value: '${weather.tempMin.round()}° / ${weather.tempMax.round()}°'),
                   ],
                 ),
 
                 const Spacer(),
 
-                // Bottom block (UI only)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
@@ -121,13 +109,13 @@ class DetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(color: Colors.white.withOpacity(0.18)),
                   ),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.info_outline, color: Colors.white),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.check_circle_outline, color: Colors.white),
                       SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Элементы интерфейса добавлены согласно макету Figma. Функционал не обязателен.',
+                          'Все элементы интерфейса активны: поиск, выбор города, переход на детали.',
                           style: TextStyle(color: Colors.white70),
                         ),
                       ),
