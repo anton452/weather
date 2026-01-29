@@ -5,14 +5,16 @@ import '../services/api_service.dart';
 import 'detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String initialCity;
+
+  const HomeScreen({super.key, required this.initialCity});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _controller = TextEditingController(text: 'Karaganda');
+  final _controller = TextEditingController();
   final _api = ApiService();
 
   Weather? _weather;
@@ -21,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Автозагрузка при старте — как в большинстве weather UI
+    _controller.text = widget.initialCity;
     _loadWeather();
   }
 
@@ -39,7 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() => _weather = data);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -75,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Верхняя панель
                 Row(
                   children: [
                     const Icon(Icons.location_on, color: Colors.white, size: 20),
@@ -85,19 +90,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const Spacer(),
                     IconButton(
-                      onPressed: _loadWeather,
+                      onPressed: _loading ? null : _loadWeather,
                       icon: const Icon(Icons.refresh, color: Colors.white),
-                    )
+                    ),
                   ],
                 ),
+
                 const SizedBox(height: 4),
                 const Text(
                   'Weather',
-                  style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
+
                 const SizedBox(height: 16),
 
-                // Search bar
+                // Поиск
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
@@ -131,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 18),
 
-                // Big weather card (real data)
+                // Карточка погоды
                 GestureDetector(
                   onTap: _openDetails,
                   child: Container(
@@ -142,18 +153,27 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(26),
                       border: Border.all(color: Colors.white.withOpacity(0.18)),
                       boxShadow: const [
-                        BoxShadow(blurRadius: 24, offset: Offset(0, 10), color: Color(0x22000000)),
+                        BoxShadow(
+                          blurRadius: 24,
+                          offset: Offset(0, 10),
+                          color: Color(0x22000000),
+                        )
                       ],
                     ),
                     child: _loading
                         ? const Padding(
                             padding: EdgeInsets.symmetric(vertical: 26),
-                            child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                            child: Center(
+                              child: CircularProgressIndicator(color: Colors.white),
+                            ),
                           )
                         : (_weather == null)
                             ? const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 26),
-                                child: Text('Введите город и нажмите GO', style: TextStyle(color: Colors.white70)),
+                                child: Text(
+                                  'Введите город и нажмите GO',
+                                  style: TextStyle(color: Colors.white70),
+                                ),
                               )
                             : Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +187,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: Colors.white.withOpacity(0.16),
                                           borderRadius: BorderRadius.circular(18),
                                         ),
-                                        child: const Icon(Icons.wb_sunny, color: Colors.white, size: 30),
+                                        child: const Icon(
+                                          Icons.wb_sunny,
+                                          color: Colors.white,
+                                          size: 30,
+                                        ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -185,7 +209,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             const SizedBox(height: 2),
                                             Text(
                                               _weather!.description,
-                                              style: const TextStyle(color: Colors.white70, fontSize: 14),
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 14,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -196,19 +223,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(height: 14),
                                   Text(
                                     '${_weather!.temp.round()}°',
-                                    style: const TextStyle(color: Colors.white, fontSize: 54, fontWeight: FontWeight.w900),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 54,
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     'Feels like ${_weather!.feelsLike.round()}°',
-                                    style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 14),
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.75),
+                                      fontSize: 14,
+                                    ),
                                   ),
                                   const SizedBox(height: 12),
                                   Row(
                                     children: [
-                                      _MiniPill(icon: Icons.water_drop_outlined, text: 'Humidity ${_weather!.humidity}%'),
+                                      _MiniPill(
+                                        icon: Icons.water_drop_outlined,
+                                        text: 'Humidity ${_weather!.humidity}%',
+                                      ),
                                       const SizedBox(width: 10),
-                                      _MiniPill(icon: Icons.air, text: 'Wind ${_weather!.windSpeed.toStringAsFixed(1)} m/s'),
+                                      _MiniPill(
+                                        icon: Icons.air,
+                                        text: 'Wind ${_weather!.windSpeed.toStringAsFixed(1)} m/s',
+                                      ),
                                     ],
                                   )
                                 ],
@@ -218,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 14),
 
-                // Popular cities (chips)
+                // Чипы городов
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
@@ -258,7 +298,14 @@ class _MiniPill extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white, size: 16),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -283,7 +330,13 @@ class _CityChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: Colors.white.withOpacity(0.18)),
         ),
-        child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
