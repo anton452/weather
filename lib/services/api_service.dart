@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/weather.dart';
 
 class ApiService {
-  // Твой API ключ:
+  //  API ключ:
   static const String _apiKey = 'b55aa77c6483657c9eccec4ae8914893';
 
   Future<Weather> fetchWeather(String city) async {
@@ -27,7 +27,7 @@ class ApiService {
       final data = json.decode(response.body) as Map<String, dynamic>;
       return Weather.fromJson(data);
     } else {
-      // Покажем тело ответа — удобно для диагностики
+      // Покажем тело ответа 
       throw Exception('API ошибка ${response.statusCode}: ${response.body}');
     }
   }

@@ -7,6 +7,10 @@ class DetailScreen extends StatelessWidget {
 
   const DetailScreen({super.key, required this.weather});
 
+  void _snack(BuildContext context, String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,11 +23,12 @@ class DetailScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Top bar
                 Row(
                   children: [
                     IconButton(
@@ -31,22 +36,27 @@ class DetailScreen extends StatelessWidget {
                       icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
                     ),
                     const Spacer(),
-                    IconButton(
-                      onPressed: () {},
+                    PopupMenuButton<String>(
                       icon: const Icon(Icons.more_horiz, color: Colors.white),
+                      onSelected: (v) {
+                        if (v == 'share') _snack(context, 'Поделиться (заглушка)');
+                        if (v == 'about') _snack(context, 'Weather App — учебный проект');
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(value: 'share', child: Text('Поделиться')),
+                        PopupMenuItem(value: 'about', child: Text('О приложении')),
+                      ],
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 8),
                 Text(
                   weather.cityName,
                   style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  weather.description,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                ),
+                Text(weather.description, style: const TextStyle(color: Colors.white70, fontSize: 14)),
                 const SizedBox(height: 18),
 
                 Row(
@@ -74,7 +84,7 @@ class DetailScreen extends StatelessWidget {
                           style: const TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
 
@@ -95,11 +105,15 @@ class DetailScreen extends StatelessWidget {
                     InfoCard(icon: Icons.water_drop_outlined, label: 'Humidity', value: '${weather.humidity}%'),
                     InfoCard(icon: Icons.air, label: 'Wind', value: '${weather.windSpeed.toStringAsFixed(1)} m/s'),
                     InfoCard(icon: Icons.speed, label: 'Pressure', value: '${weather.pressure} hPa'),
-                    InfoCard(icon: Icons.thermostat, label: 'Min / Max', value: '${weather.tempMin.round()}° / ${weather.tempMax.round()}°'),
+                    InfoCard(
+                      icon: Icons.thermostat,
+                      label: 'Min / Max',
+                      value: '${weather.tempMin.round()}° / ${weather.tempMax.round()}°',
+                    ),
                   ],
                 ),
 
-                const Spacer(),
+                const SizedBox(height: 18),
 
                 Container(
                   width: double.infinity,
@@ -115,7 +129,7 @@ class DetailScreen extends StatelessWidget {
                       SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Все элементы интерфейса активны: поиск, выбор города, переход на детали.',
+                          'Экран адаптивный: прокрутка включена, переполнения нет.',
                           style: TextStyle(color: Colors.white70),
                         ),
                       ),

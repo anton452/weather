@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'select_location_screen.dart';
+import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,7 +16,9 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const SelectLocationScreen()),
+        MaterialPageRoute(
+          builder: (_) => const HomeScreen(initialCity: 'Almaty'),
+        ),
       );
     });
   }
@@ -39,10 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             SizedBox(height: 8),
-            Text(
-              'weather app',
-              style: TextStyle(fontSize: 18),
-            ),
+            Text('weather app', style: TextStyle(fontSize: 18)),
           ],
         ),
       ),
