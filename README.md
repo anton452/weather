@@ -16,8 +16,7 @@
 и `Navigator.pop()` (возврат назад).
 
 ## Макет в Figma
-(вставь сюда свою ссылку на дубликат Figma)
-Например: https://www.figma.com/file/XXXX/Weather-App
+https://www.figma.com/design/lf5YNa8VFTnnrme5pb60pG/Untitled?node-id=1-349&t=K4WRk5ZTdCNKVc6R-0)
 
 ## Запуск проекта
 ```bash
