@@ -18,39 +18,83 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void login() async {
     bool success = await auth.login(
-        loginController.text,
-        passwordController.text);
+      loginController.text,
+      passwordController.text,
+    );
 
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Неверный логин или пароль")));
+        const SnackBar(content: Text("Неверный логин или пароль")),
+      );
     } else {
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()));
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Вход")),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(controller: loginController, decoration: const InputDecoration(labelText: "Логин")),
-            TextField(controller: passwordController, decoration: const InputDecoration(labelText: "Пароль"), obscureText: true),
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: login, child: const Text("Войти")),
-            TextButton(
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const RegisterScreen()));
-              },
-              child: const Text("Регистрация"),
-            )
-          ],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            children: [
+              const Text(
+                "Вход",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              TextField(
+                controller: loginController,
+                decoration: const InputDecoration(
+                  labelText: "Логин",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Пароль",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: login,
+                  child: const Text("Войти"),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                  );
+                },
+                child: const Text("Нет аккаунта? Зарегистрироваться"),
+              ),
+            ],
+          ),
         ),
       ),
     );

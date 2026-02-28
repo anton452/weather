@@ -16,12 +16,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void register() async {
     bool success = await auth.register(
-        loginController.text,
-        passwordController.text);
+      loginController.text,
+      passwordController.text,
+    );
 
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Логин уже существует")));
+        const SnackBar(content: Text("Логин уже существует")),
+      );
     } else {
       Navigator.pop(context);
     }
@@ -31,15 +33,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Регистрация")),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(controller: loginController, decoration: const InputDecoration(labelText: "Логин")),
-            TextField(controller: passwordController, decoration: const InputDecoration(labelText: "Пароль"), obscureText: true),
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: register, child: const Text("Зарегистрироваться")),
-          ],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            children: [
+
+              const SizedBox(height: 20),
+
+              TextField(
+                controller: loginController,
+                decoration: const InputDecoration(
+                  labelText: "Логин",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Пароль",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: register,
+                  child: const Text("Зарегистрироваться"),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
