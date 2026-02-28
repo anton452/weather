@@ -1,291 +1,177 @@
 import 'package:flutter/material.dart';
-
-import '../models/weather.dart';
-import '../services/api_service.dart';
-import 'detail_screen.dart';
+import '../services/weather_service.dart';
+import '../services/earthquake_service.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String initialCity;
-
-  const HomeScreen({super.key, required this.initialCity});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _controller = TextEditingController();
-  final _api = ApiService();
 
-  Weather? _weather;
-  bool _loading = false;
+  final WeatherService weatherService = WeatherService();
+  final EarthquakeService earthquakeService = EarthquakeService();
+
+  final TextEditingController cityController = TextEditingController();
+
+  Map<String, dynamic>? weatherData;
+  List earthquakes = [];
+
+  bool isLoadingWeather = false;
+  bool isLoadingEarthquakes = false;
 
   @override
   void initState() {
     super.initState();
-    _controller.text = widget.initialCity;
-    _loadWeather();
+    loadEarthquakes();
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  Future<void> loadWeather() async {
+    if (cityController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Введите название города")),
+      );
+      return;
+    }
 
-  Future<void> _loadWeather() async {
-    setState(() => _loading = true);
-    try {
-      final data = await _api.fetchWeather(_controller.text);
-      if (!mounted) return;
-      setState(() => _weather = data);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
-    } finally {
-      if (mounted) setState(() => _loading = false);
+    setState(() {
+      isLoadingWeather = true;
+    });
+
+    final data = await weatherService.fetchWeather(cityController.text);
+
+    setState(() {
+      weatherData = data;
+      isLoadingWeather = false;
+    });
+
+    if (data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Город не найден или ошибка API")),
+      );
     }
   }
 
-  void _setCity(String city) {
-    _controller.text = city;
-    _loadWeather();
+  Future<void> loadEarthquakes() async {
+    setState(() {
+      isLoadingEarthquakes = true;
+    });
+
+    final data = await earthquakeService.fetchEarthquakes();
+
+    setState(() {
+      earthquakes = data.take(5).toList();
+      isLoadingEarthquakes = false;
+    });
   }
 
-  void _openDetails() {
-    if (_weather == null) return;
-    Navigator.push(
+  void logout() {
+    Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => DetailScreen(weather: _weather!)),
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1B2B5A), Color(0xFF5B86E5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.location_on, color: Colors.white, size: 20),
-                    const SizedBox(width: 6),
-                    Text(
-                      _weather?.cityName.isNotEmpty == true ? _weather!.cityName : 'City',
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: _loading ? null : _loadWeather,
-                      icon: const Icon(Icons.refresh, color: Colors.white),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 4),
-                const Text(
-                  'Weather',
-                  style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 16),
-
-                // Search
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.14),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.18)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.search, color: Colors.white70),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: _controller,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            hintText: 'Search city...',
-                            hintStyle: TextStyle(color: Colors.white54),
-                            border: InputBorder.none,
-                          ),
-                          onSubmitted: (_) => _loadWeather(),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: _loading ? null : _loadWeather,
-                        child: const Text('GO', style: TextStyle(color: Colors.white)),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                // Weather Card
-                GestureDetector(
-                  onTap: _openDetails,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.14),
-                      borderRadius: BorderRadius.circular(26),
-                      border: Border.all(color: Colors.white.withOpacity(0.18)),
-                      boxShadow: const [
-                        BoxShadow(blurRadius: 24, offset: Offset(0, 10), color: Color(0x22000000)),
-                      ],
-                    ),
-                    child: _loading
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 26),
-                            child: Center(child: CircularProgressIndicator(color: Colors.white)),
-                          )
-                        : (_weather == null)
-                            ? const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 26),
-                                child: Text('Введите город и нажмите GO', style: TextStyle(color: Colors.white70)),
-                              )
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        height: 54,
-                                        width: 54,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.16),
-                                          borderRadius: BorderRadius.circular(18),
-                                        ),
-                                        child: const Icon(Icons.wb_sunny, color: Colors.white, size: 30),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              _weather!.cityName,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              _weather!.description,
-                                              style: const TextStyle(color: Colors.white70, fontSize: 14),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const Icon(Icons.chevron_right, color: Colors.white),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 14),
-                                  Text(
-                                    '${_weather!.temp.round()}°',
-                                    style: const TextStyle(color: Colors.white, fontSize: 54, fontWeight: FontWeight.w900),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Feels like ${_weather!.feelsLike.round()}°',
-                                    style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 14),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      _MiniPill(icon: Icons.water_drop_outlined, text: 'Humidity ${_weather!.humidity}%'),
-                                      const SizedBox(width: 10),
-                                      _MiniPill(icon: Icons.air, text: 'Wind ${_weather!.windSpeed.toStringAsFixed(1)} m/s'),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _CityChip(label: 'Almaty', onTap: () => _setCity('Almaty')),
-                    _CityChip(label: 'Astana', onTap: () => _setCity('Astana')),
-                    _CityChip(label: 'Shymkent', onTap: () => _setCity('Shymkent')),
-                    _CityChip(label: 'Karaganda', onTap: () => _setCity('Karaganda')),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniPill extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _MiniPill({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.14),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.18)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 8),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+      appBar: AppBar(
+        title: const Text("Главный экран"),
+        actions: [
+          IconButton(
+            onPressed: logout,
+            icon: const Icon(Icons.logout),
+          )
         ],
       ),
-    );
-  }
-}
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
 
-class _CityChip extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
+            /// ================= WEATHER =================
 
-  const _CityChip({required this.label, required this.onTap});
+            const Text(
+              "Погода",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
 
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.14),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: Colors.white.withOpacity(0.18)),
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: cityController,
+              decoration: const InputDecoration(
+                labelText: "Введите город",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            ElevatedButton(
+              onPressed: loadWeather,
+              child: const Text("Получить погоду"),
+            ),
+
+            const SizedBox(height: 15),
+
+            if (isLoadingWeather)
+              const CircularProgressIndicator(),
+
+            if (weatherData != null && !isLoadingWeather) ...[
+              const SizedBox(height: 10),
+              Text(
+                "Температура: ${weatherData!["main"]["temp"]} °C",
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                "Состояние: ${weatherData!["weather"][0]["description"]}",
+              ),
+              const SizedBox(height: 5),
+              Image.network(
+                "https://openweathermap.org/img/wn/${weatherData!["weather"][0]["icon"]}@2x.png",
+              ),
+            ],
+
+            const SizedBox(height: 40),
+
+            /// ================= EARTHQUAKE =================
+
+            const Text(
+              "Сейсмическая активность (за сутки)",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 15),
+
+            if (isLoadingEarthquakes)
+              const CircularProgressIndicator(),
+
+            if (!isLoadingEarthquakes)
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: earthquakes.length,
+                itemBuilder: (context, index) {
+                  final quake = earthquakes[index]["properties"];
+
+                  return Card(
+                    child: ListTile(
+                      title: Text("Магнитуда: ${quake["mag"]}"),
+                      subtitle: Text(quake["place"]),
+                    ),
+                  );
+                },
+              ),
+          ],
         ),
-        child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
       ),
     );
   }
